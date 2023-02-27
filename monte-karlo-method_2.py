@@ -5,11 +5,11 @@ from matplotlib.widgets import TextBox
 from scipy import integrate
 
 n_var = 11
-expression = 1000
+expression = 2000
 M=S=0
-x_max = 7
+#x_max = 7
 y_max = 6
-#x_max = 8
+x_max = 8
 x_dots = []
 y_dots = []
 
@@ -28,8 +28,8 @@ x_gen = []
 y_gen = []
 
 def f(x):
-    #return math.sqrt(7 - 3 * math.sin(x) * math.sin(x))
-    return math.sqrt(29-n_var*(math.cos(x)**2))
+    return math.sqrt(7 - 3 * math.sin(x) * math.sin(x))
+    #return math.sqrt(29-n_var*(math.cos(x)**2))
 
 
 
@@ -87,10 +87,11 @@ def ex2():
         y_dots.append(y)
 
 
-    axbox = fig.add_axes([0.1, 0, 0.8, 0.075])
-    text_box = TextBox(axbox, "Кол-во точек", textalignment="center")
-    text_box.on_submit(submit)
-    text_box.set_val(expression)
+    submit(expression)
+    # axbox = fig.add_axes([0.1, 0, 0.8, 0.075])
+    # text_box = TextBox(axbox, "Кол-во точек", textalignment="center")
+    # text_box.on_submit(submit)
+    # text_box.set_val(expression)
 
     plt.show()
 

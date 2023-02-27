@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import random
+from scipy import integrate
 from matplotlib.widgets import TextBox
 
 arr_y21 = []
@@ -15,10 +16,10 @@ x_outside = []
 y_outside = []
 
 n = 11
-x_max = 22
-y_max = 43
+x_max = 20.9
+y_max = 42
 M = S = 0
-expression = 100
+expression = 10000
 
 fig, ax = plt.subplots()
 
@@ -37,20 +38,21 @@ def rand_point(x1, y1, x2, y2):
 
 def submit(expression):
     ax.clear()
-    draw_graph(arr_x, arr_y21,arr_y22)
+    draw_graph(arr_x, arr_y21, arr_y22)
     arr_xx = []
     arr_yy = []
     for i in range(int(expression)):
-        x,y = rand_point(0,0,22,43)
+        x,y = rand_point(0,0,21,42)
         arr_xx.append(x)
         arr_yy.append(y)
 
     draw_points(arr_xx, arr_yy)
     M = len(x_inside)
     print(M)
-    S = round((M / n) * (x_max * y_max), 2)
+    S = round((M / int(expression)) * (x_max * y_max), 2)
     print(S)
-    fig.suptitle("Кол-во точек внутри треугольника = " + str(M) + "\nПлощадь треугольника методом Монте-Карло = " + str(S))
+    S_real = round(y_max / 2 * x_max, 2)
+    fig.suptitle("Кол-во точек внутри треугольника = " + str(M) + "\nПлощадь треугольника методом Монте-Карло = " + str(S) + '\n Точная площадь = ' + str(S_real))
     print(expression)
     print("ez")
 
@@ -96,11 +98,11 @@ def ex1():
         arr_y22.append(fx22)
 
 
-    axbox = fig.add_axes([0.1, 0, 0.8, 0.075])
-    text_box = TextBox(axbox, "Кол-во точек", textalignment="center")
-    text_box.on_submit(submit)
-    text_box.set_val(100)
-
+    # axbox = fig.add_axes([0.1, 0, 0.8, 0.075])
+    # text_box = TextBox(axbox, "Кол-во точек", textalignment="center")
+    # text_box.on_submit(submit)
+    # text_box.set_val(100)
+    submit(expression)
     #legend = plt.legend(loc='upper left', shadow=True, fontsize='x-small')
     plt.show()
 
