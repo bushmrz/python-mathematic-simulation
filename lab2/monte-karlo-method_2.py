@@ -4,12 +4,12 @@ import random
 from matplotlib.widgets import TextBox
 from scipy import integrate
 
-n_var = 11
+n_var = 3
 expression = 2000
 M=S=0
-#x_max = 7
+x_max = 7
 y_max = 6
-x_max = 8
+#x_max = 8
 x_dots = []
 y_dots = []
 
@@ -28,8 +28,8 @@ x_gen = []
 y_gen = []
 
 def f(x):
-    return math.sqrt(7 - 3 * math.sin(x) * math.sin(x))
-    #return math.sqrt(29-n_var*(math.cos(x)**2))
+    #return math.sqrt(7 - 3 * math.sin(x) * math.sin(x))
+    return math.sqrt(29-n_var*(math.cos(x)**2))
 
 
 
