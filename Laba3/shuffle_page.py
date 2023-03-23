@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def shuffle_meth():
 # метод смеш конгр
     n = 4
-    count = 10000
+    count = 100
 
     a_const = 1357
     b_const = 5689
@@ -42,7 +42,7 @@ def shuffle_meth():
     df = pd.DataFrame(data=data)
     # print(df)
 
-    df['random'].hist(bins=100)
+    df['random'].hist(bins=10)
     title3 = plt.suptitle('Метод перемешивания')
     plt.xlim(0.0, 1.0)
     plt.show()
