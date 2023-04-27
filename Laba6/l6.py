@@ -1,7 +1,8 @@
 import numpy as np
 from tkinter import *
-
+import statistics
 # класс процессор симулироет отдельный процессор на него поступают заявки он может генерировать такие события как окончание работы и начало работы
+
 class Processor:
     def __init__(self,ver,name):
         self.coof=ver
@@ -13,9 +14,11 @@ class Processor:
         self.zakaz=0
         self.mass_orders=0
         self.orders_koll=[]
+
     def connect_timeline(self,timeline):
         self.timeline=timeline
         # функция для создания события конец обработки задачи
+
     def start_create_obr(self,time):
         if self.enabled==0:
             self.timeline.add_event({"name":self.name+" конец создания", "time":self.ver(),"functions":[self.end_create_obr]})
@@ -23,6 +26,7 @@ class Processor:
             self.time_start = self.timeline.time
             self.orders_koll[0]["time_queue"]=self.orders_koll[0]["time_queue"]+(round(self.timeline.time-self.orders_koll[0]["tec_time"],2))
             # функция для завершения работы и создания события начало работы если в очереди заявок есть заявки
+
     def end_create_obr(self,time):
         self.time_work =self.time_work+ (time-self.time_start)
         self.orders_koll[0]["time_work"] = self.orders_koll[0]["time_work"] + (time-self.time_start)
@@ -32,6 +36,7 @@ class Processor:
         if self.orders !=0:
             self.timeline.add_event({"name": self.name + " начало создания", "time": round(time,2), "functions": [self.start_create_obr]})
             # функция получения заявки от системы
+
     def get_orders(self,time):
         self.orders+=1
         self.timeline.orders_all+=1
@@ -39,12 +44,23 @@ class Processor:
         tec_orders["path"]=tec_orders["path"]+"_"+self.name
         self.orders_koll.append(tec_orders)
         # функция отправки заявки назад в систему
+
     def pop_orders(self,time):
         self.orders-=1
         self.orders_koll[0]["tec_time"]=self.timeline.time
         self.timeline.tec_order=self.orders_koll.pop(0)
+
     def get_statistics(self):
-        return self.name+"\n     время работы: "+str(self.time_work)+"\n     количество обработанных задач: "+str(self.zakaz)+"\n     количество заявок в очереди: "+str(self.orders)+"\n     коэффициент загрузки: "+str(round(self.time_work/self.timeline.time,2))+"\n     простой: "+str(round((self.timeline.time-self.time_work)/self.timeline.time,2)*100)+"%" + "\n ======================"
+        return self.name+"\n     время работы: "+str(self.time_work) +\
+               "\n     количество обработанных задач: "+str(self.zakaz) +\
+               "\n     количество заявок в очереди: "+str(self.orders) + \
+               "\n     коэффициент загрузки: " + str(round(self.time_work/self.timeline.time, 2)) + \
+               "\n     простой: " + str(round((self.timeline.time-self.time_work)/self.timeline.time, 2)*100) + \
+               "%" + "\n ======================"
+
+    def get_chill(self):
+        return round((self.timeline.time-self.time_work)/self.timeline.time, 2)
+
     def ver(self):
        return np.random.normal(self.coof[0],self.coof[1])+self.timeline.time
 
@@ -69,25 +85,34 @@ class System:
         self.path=[]
         self.rasp=[]
         # функция для добавления любого события
+
     def add_event(self,el):
         self.events.append(el)
         self.events.sort(key=lambda x: x["time"])
         # функция для создания события новая заявка
+
     def get_order(self,time):
         new_time= self.order_stats(self.time)
         self.add_event({"name": "заявка", "time": new_time, "functions":[self.get_order,self.get_processors]})
         # функция для отправки на процессор заявки и включения процессора если он не занят
+
     def get_processors(self,time):
         tec_proc = self.get_rand_processor()
         self.tec_order = {"path": "", "time_queue": 0, "time_work": 0, "tec_time": round(self.time,2)}
-        self.add_event({"name": tec_proc.name+" отправленная заявка", "time": round(self.time,2),"functions": [tec_proc.get_orders]})
+        self.add_event({"name": tec_proc.name+" отправленная заявка",
+                        "time": round(self.time,2),"functions": [tec_proc.get_orders]})
         if tec_proc.enabled==0:
-            self.add_event({"name": tec_proc.name + " начало создания", "time": round(self.time,2), "functions": [tec_proc.start_create_obr]})
+            self.add_event({"name": tec_proc.name + " начало создания",
+                            "time": round(self.time,2), "functions": [tec_proc.start_create_obr]})
             # функция для отправки на процессор заявки и включения процессора если он не занят
+
     def get_processors_con(self,proc):
-        self.add_event({"name": proc.name + " отправленная заявка", "time": round(self.time,2), "functions": [proc.get_orders]})
+        self.add_event({"name": proc.name + " отправленная заявка",
+                        "time": round(self.time,2), "functions": [proc.get_orders]})
         if proc.enabled == 0:
-            self.add_event({"name": proc.name + " начало создания", "time": round(self.time,2),"functions": [proc.start_create_obr]})
+            self.add_event({"name": proc.name + " начало создания",
+                            "time": round(self.time,2),"functions": [proc.start_create_obr]})
+
     def get_rand_processor(self):
         rd = np.random.rand()
         k = 0
@@ -95,6 +120,7 @@ class System:
             if rd >= i[0] and rd < i[1]:
                 return self.processors[k]
             k+=1
+
     def is_enabled(self):
         c=0
         for i in self.processors:
@@ -106,6 +132,7 @@ class System:
             self.time_work = self.time_work + (self.time - self.time_save_enable)
         self.enabled=c
         # функция для обработки событий берет первое событие из очереди и обрабатывает его
+
     def get_tik_simulator(self):
         tec_events = self.events.pop(0)
         self.time = tec_events["time"]
@@ -130,17 +157,28 @@ class System:
                 i(round(self.time,2))
         self.history.append({"name":tec_events["name"],"time":tec_events["time"]})
         self.is_enabled()
+
     def get_history(self):
         str_rez=""
         for i in self.history:
             str_rez=str_rez+str(i)+"\n"
         return str_rez
+
+    def find_chill(self):
+        chillin = 0
+        for k in self.processors:
+            chillin+=k.get_chill()
+        return chillin*100
     def get_statistic(self):
         str_rez = ""
-        for i in self.processors:
-            str_rez = str_rez + i. get_statistics() + "\n"
-        str_rez = str_rez + "время: "+str(round(self.time,2))+"\nколичество выполненых задач: "+str(self.zakaz)+"\n" + "====================== \n"
+
+        for k in self.processors:
+            str_rez = str_rez + k. get_statistics() + "\n"
+        # str_rez = str_rez + "время: "+str(round(self.time,2))+"\nколичество выполненых задач: "+str(self.zakaz)+"\n" + "====================== \n"
         mass_path=set()
+        och = 0
+        all_time_och = 0.0
+
         for i in self.order_history:
              mass_path.add(i["path"])
         for i in mass_path:
@@ -154,18 +192,29 @@ class System:
                 time_och=time_och+j["time_queue"]
                 time_work=time_work+j["time_work"]
             kol = len(mass_con_path)
-            str_rez = str_rez + "статистика заявок на данном пути: "+ i+"\n     Среднее время очереди: "+ str(time_och/kol)+"\n     Среднее время задачи: "+ str(time_work/kol)+ "\n     Количество заявок: "+str(kol)+"\n     Процентное соотношение относительно всех заявок: "+str(round(kol/len(self.order_history)*100,0))+"%\n" + "=======================\n"
+            och += time_och
+            str_rez = str_rez + "статистика заявок на данном пути: " + i + \
+                      "\n     Среднее время нахождения задания в очереди: " + str(time_och/kol) + \
+                      "\n     Среднее время выполнения задачи: " + str(time_work/kol) + \
+                      "\n     Количество заявок: " + str(kol) + \
+                      "\n     Процентное соотношение относительно всех заявок: " + \
+                      str((kol/len(self.order_history)*100)) + \
+                      "%\n" + "=======================\n"
+            all_time_och = time_och/kol
+
+
         time_och = 0
         time_work = 0
         for i in self.order_history:
             time_och = time_och + i["time_queue"]
             time_work = time_work + i["time_work"]
         kol = len(self.order_history)
-        # str_rez = str_rez + "Статистика по всем заявкам:" + "\n     Среднее время очереди: " + str(time_och / kol) + "\n    Среднее время задачи: " + str(time_work / kol) + "\n<--------------------------------->\n"
-        # str_rez = str_rez + "абсолютная пропускная способность: " + str(self.zakaz/self.time)+"\n<--------------------------------->\n"
+        str_rez = str_rez + "Статистика по всем заявкам:" + "\n     Среднее время нахождения задачи в очереди: " + str(all_time_och) + "\n    Среднее время выполнения задачи: " + str(time_work / kol) + "\n<--------------------------------->\n"
+        # str_rez = str_rez + "Среднее время выполнения задачи: " + str(self.zakaz/self.time)+"\n<--------------------------------->\n"
         # str_rez = str_rez + "относительная пропускная способность: " + str((self.zakaz / self.time)/(self.orders_all/self.time)) + "\n<--------------------------------->\n"
         # str_rez = str_rez + "коэффициент загрузки всей программы: " + str(1-self.time_work/self.time) + "\n<--------------------------------->\n"
         return str_rez
+
     def get_orders_history(self):
         str_rez = ""
         for i in self.order_history:
@@ -174,15 +223,20 @@ class System:
 
     def get_order_stat(self,val):
         self.order_stats = val
+
     def set_path(self,val):
         self.path=val
+
     def set_rasp(self,val):
         self.rasp=val
+
     def search_process(self,name):
         for i in self.processors:
             if name.find(i.name)!=-1:
                 return i
+
 mat=''
+
 def cheak_btn():
     if textbox_opt.get()!='':
 
@@ -275,6 +329,7 @@ def compl():
         proc1 = int(mat[i-1])
         proc2 = int(disp[i-1])
         mass_proc.append([proc1, proc2])
+
     task1 = mat_int
     task2 = disp_int
     integ = integ_int
@@ -299,6 +354,7 @@ def compl():
     otnos = 0
     koof_zag = 0
     timeline = 0
+    chill = 0
     for j in range(1, kolwo_powtor + 1):
         kol = 1
         processors = []
@@ -318,38 +374,46 @@ def compl():
         absolutle = absolutle + (timeline.zakaz / timeline.time)
         otnos = otnos + ((timeline.zakaz / timeline.time) / (timeline.orders_all / timeline.time))
         koof_zag = koof_zag + (1 - timeline.time_work / timeline.time)
+
     label1 = Text(add,width=80, height=12)
     label1.insert(1.0,timeline.get_history())
     label2 = Text(add,width=115, height=12)
     label2.insert(1.0, timeline.get_orders_history())
     # label3 = Text(add,width=80, height=10)
     # label3.insert(1.0,timeline.get_history())
-    label4 = Text(add,width=80, height=15)
+    label4 = Text(add,width=80, height=35)
+    str_time = "время работы программы: " + str(time / kolwo_powtor) + "\n"
+    label4.insert(1.0, str_time)
     label4.insert(1.0,timeline.get_statistic())
-    label5 = Label(add, text="время работы программы в среднем: " + str(time / kolwo_powtor))
-    label6 = Label(add, text=str("абсолютная пропускная способность в среднем: " + str(absolutle / kolwo_powtor)))
-    label7 = Label(add, text=str("абсолютная относительная способность в среднем: " + str(otnos / kolwo_powtor)))
-    label8 = Label(add, text=str("коэффициент загрузки всей программы в среднем: " + str(koof_zag / kolwo_powtor)))
+    # chill = timeline.find_chill()
+    # label5 = Label(add, text="время работы программы: " + str(time / kolwo_powtor))
+    # label6 = Label(add, text=str("абсолютная пропускная способность в среднем: " + str(absolutle / kolwo_powtor)))
+    # label7 = Label(add, text=str("абсолютная относительная способность в среднем: " + str(otnos / kolwo_powtor)))
+    # label8 = Label(add, text=str("среднее время простоя системы: " + str(chill / 3)))
     label1.grid(row=3, column=0)
-    label2.grid(row=4, column=0)
+    label2.grid(row=3, column=0)
     # label3.grid(row=5, column=0)
     label4.grid(row=6, column=0)
-    label5.grid(row=7, column=0)
-    label6.grid(row=8, column=0)
-    label7.grid(row=9, column=0)
-    label8.grid(row=10, column=0)
-    label_mat=Label(add, text=("Матем ожид= "+str(mat)))
-    label_col = Label(add, text=("Количество= " + str(col_op)))
-    label_disp = Label(add, text=("Дисперсия= " + str(disp)))
-    label_ = Label(add, text=("Матем инте, дисп, колл_деталей " + str(mat_int)+" "+str(disp_int)+" " +str(integ_int)))
-    label_ver=Label(add, text=("Вероятности - " + str(ver_proc)))
-    label_ver_proc = Label(add, text=("Вероятности перехода- " + str(ver_1_2)))
-    label_mat.grid(row=11, column=0)
-    label_col.grid(row=12, column=0)
-    label_disp.grid(row=13, column=0)
-    label_.grid(row=14, column=0)
-    label_ver.grid(row=15, column=0)
-    label_ver_proc.grid(row=16, column=0)
+    # label5.grid(row=7, column=0)
+    # label6.grid(row=8, column=0)
+    # label7.grid(row=9, column=0)
+    # label8.grid(row=8, column=0)
+    str_info = "Матем ожид= "+str(mat) + "\n" + "Количество= " + str(col_op) + "\n" +  "Дисперсия= " + str(disp) + \
+               "\n" + "Матем инте, дисп, колл_деталей: " + str(mat_int)+", "+str(disp_int)+", " +str(integ_int) + "\n" \
+               + "Вероятности - " + str(ver_proc) + "\n" + "Вероятности перехода- " + str(ver_1_2)
+    label_mat=Label(add, text = (str_info))
+    # label_mat=Label(add, text=("Матем ожид= "+str(mat)))
+    # label_col = Label(add, text=("Количество= " + str(col_op)))
+    # label_disp = Label(add, text=("Дисперсия= " + str(disp)))
+    # label_ = Label(add, text=("Матем инте, дисп, колл_деталей " + str(mat_int)+" "+str(disp_int)+" " +str(integ_int)))
+    # label_ver=Label(add, text=("Вероятности - " + str(ver_proc)))
+    # label_ver_proc = Label(add, text=("Вероятности перехода- " + str(ver_1_2)))
+    label_mat.grid(row=7, column=0)
+    # label_col.grid(row=5, column=1)
+    # label_disp.grid(row=5, column=1)
+    # label_.grid(row=7, column=1)
+    # label_ver.grid(row=8, column=1)
+    # label_ver_proc.grid(row=9, column=1)
     # print(timeline.get_history())
     # print(timeline.get_orders_history())
     # print(timeline.get_history())
@@ -442,3 +506,4 @@ disp_int=0
 integ_int=0
 ver_proc=''
 ver_1_2=''
+chill = 0
